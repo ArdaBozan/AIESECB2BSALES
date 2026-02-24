@@ -45,6 +45,10 @@ const mockActivityLog = [
   { id: '4', userName: 'Semih Taş', status: 'postponed' as ActivityType, date: '2026-06-04 13:54', role: 'Üye', note: '1 Ay sonra tekrar aranacak' },
   { id: '5', userName: 'Emine Meryem Karagül', status: 'proposal' as ActivityType, date: '2026-06-04 13:54', role: 'Üye', note: 'Teklif kabul edildi' },
   { id: '6', userName: 'Ali Nazgul', status: 'cold_call' as ActivityType, date: '2026-06-04 13:54', role: 'Admin', note: 'Görüşme yapılmalı' },
+  { id: '7', userName: 'Zeynep Kaya', status: 'meeting' as ActivityType, date: '2026-06-03 10:30', role: 'Admin', note: 'Fiyat görüşmesi yapıldı' },
+  { id: '8', userName: 'Burak Demir', status: 'cold_call' as ActivityType, date: '2026-06-03 09:15', role: 'Üye', note: 'İlk görüşme tamamlandı' },
+  { id: '9', userName: 'Ayşe Yılmaz', status: 'postponed' as ActivityType, date: '2026-06-02 14:20', role: 'Admin', note: 'Bütçe onayı bekleniyor' },
+  { id: '10', userName: 'Can Öztürk', status: 'proposal' as ActivityType, date: '2026-06-02 11:45', role: 'Üye', note: 'Teklif gönderildi' },
 ];
 
 export default function ActivitiesPage() {
@@ -60,7 +64,9 @@ export default function ActivitiesPage() {
   const [deleteModal, setDeleteModal] = useState<{ isOpen: boolean; activity: typeof mockActivityLog[0] | null }>({ isOpen: false, activity: null });
   const [editFormData, setEditFormData] = useState({ userName: '', status: '' as ActivityType, note: '' });
   const [searchQuery, setSearchQuery] = useState('');
+  const [currentPage, setCurrentPage] = useState(1);
   const menuRef = useRef<HTMLDivElement>(null);
+  const ITEMS_PER_PAGE = 6;
 
   // Close menu dropdown when clicking outside
   useEffect(() => {
@@ -122,6 +128,18 @@ export default function ActivitiesPage() {
     }
     return true;
   });
+
+  // Pagination calculations
+  const totalPages = Math.ceil(filteredActivityLog.length / ITEMS_PER_PAGE);
+  const paginatedActivityLog = filteredActivityLog.slice(
+    (currentPage - 1) * ITEMS_PER_PAGE,
+    currentPage * ITEMS_PER_PAGE
+  );
+
+  // Reset page when filter/search changes
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [filterType, searchQuery]);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -268,8 +286,8 @@ export default function ActivitiesPage() {
               </tr>
             </thead>
             <tbody>
-              {filteredActivityLog.length > 0 ? (
-                filteredActivityLog.map((activity) => (
+              {paginatedActivityLog.length > 0 ? (
+                paginatedActivityLog.map((activity) => (
                 <tr key={activity.id}>
                   <td className="activity-log__user">
                     <div className="activity-log__user-avatar">
@@ -324,6 +342,56 @@ export default function ActivitiesPage() {
               )}
             </tbody>
           </table>
+
+          {/* Pagination */}
+          {totalPages > 1 && (
+            <div className="pagination">
+              <div className="pagination__pages">
+                {(() => {
+                  const pages: (number | string)[] = [];
+                  
+                  // Always show first page
+                  pages.push(1);
+                  
+                  // Add ellipsis after first page if needed
+                  if (currentPage > 3) {
+                    pages.push('...');
+                  }
+                  
+                  // Add pages around current page
+                  for (let i = Math.max(2, currentPage - 1); i <= Math.min(totalPages - 1, currentPage + 1); i++) {
+                    if (!pages.includes(i)) {
+                      pages.push(i);
+                    }
+                  }
+                  
+                  // Add ellipsis before last page if needed
+                  if (currentPage < totalPages - 2) {
+                    pages.push('...');
+                  }
+                  
+                  // Always show last page
+                  if (totalPages > 1 && !pages.includes(totalPages)) {
+                    pages.push(totalPages);
+                  }
+                  
+                  return pages.map((page, idx) => (
+                    typeof page === 'string' ? (
+                      <span key={`ellipsis-${idx}`} className="pagination__ellipsis">...</span>
+                    ) : (
+                      <button
+                        key={page}
+                        className={`pagination__page ${currentPage === page ? 'pagination__page--active' : ''}`}
+                        onClick={() => setCurrentPage(page)}
+                      >
+                        {page}
+                      </button>
+                    )
+                  ));
+                })()}
+              </div>
+            </div>
+          )}
         </div>
       </div>
 

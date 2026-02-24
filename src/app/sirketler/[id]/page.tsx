@@ -52,7 +52,9 @@ export default function CompanyDetailPage() {
   const [deleteCompanyModal, setDeleteCompanyModal] = useState(false);
   const [editFormData, setEditFormData] = useState({ status: '', notes: '' });
   const [searchQuery, setSearchQuery] = useState('');
+  const [currentPage, setCurrentPage] = useState(1);
   const menuRef = useRef<HTMLDivElement>(null);
+  const ITEMS_PER_PAGE = 6;
 
   // Close dropdown when clicking outside
   useEffect(() => {
@@ -77,7 +79,7 @@ export default function CompanyDetailPage() {
   const proposals = getProposalsByCompanyId(params.id as string);
 
   // Filter activities based on search query
-  const activities = allActivities.filter(activity => {
+  const filteredActivities = allActivities.filter(activity => {
     if (!searchQuery.trim()) return true;
     const query = searchQuery.toLowerCase();
     const typeLabels: Record<string, string> = {
@@ -92,6 +94,18 @@ export default function CompanyDetailPage() {
       (typeLabels[activity.type] && typeLabels[activity.type].includes(query))
     );
   });
+
+  // Pagination calculations
+  const totalPages = Math.ceil(filteredActivities.length / ITEMS_PER_PAGE);
+  const activities = filteredActivities.slice(
+    (currentPage - 1) * ITEMS_PER_PAGE,
+    currentPage * ITEMS_PER_PAGE
+  );
+
+  // Reset page when search changes
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [searchQuery]);
 
   if (!company) {
     return (
@@ -350,6 +364,56 @@ export default function CompanyDetailPage() {
               )}
             </tbody>
           </table>
+
+          {/* Pagination */}
+          {totalPages > 1 && (
+            <div className="pagination">
+              <div className="pagination__pages">
+                {(() => {
+                  const pages: (number | string)[] = [];
+                  
+                  // Always show first page
+                  pages.push(1);
+                  
+                  // Add ellipsis after first page if needed
+                  if (currentPage > 3) {
+                    pages.push('...');
+                  }
+                  
+                  // Add pages around current page
+                  for (let i = Math.max(2, currentPage - 1); i <= Math.min(totalPages - 1, currentPage + 1); i++) {
+                    if (!pages.includes(i)) {
+                      pages.push(i);
+                    }
+                  }
+                  
+                  // Add ellipsis before last page if needed
+                  if (currentPage < totalPages - 2) {
+                    pages.push('...');
+                  }
+                  
+                  // Always show last page
+                  if (totalPages > 1 && !pages.includes(totalPages)) {
+                    pages.push(totalPages);
+                  }
+                  
+                  return pages.map((page, idx) => (
+                    typeof page === 'string' ? (
+                      <span key={`ellipsis-${idx}`} className="pagination__ellipsis">...</span>
+                    ) : (
+                      <button
+                        key={page}
+                        className={`pagination__page ${currentPage === page ? 'pagination__page--active' : ''}`}
+                        onClick={() => setCurrentPage(page)}
+                      >
+                        {page}
+                      </button>
+                    )
+                  ));
+                })()}
+              </div>
+            </div>
+          )}
         </div>
       </div>
 

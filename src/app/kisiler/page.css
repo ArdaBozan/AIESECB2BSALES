@@ -114,10 +114,8 @@
 }
 
 .people-page__company {
-  background-color: var(--neutral-light);
   overflow: hidden;
   border-radius: var(--border-radius-lg);
-  box-shadow: var(--shadow-sm);
 }
 
 .people-page__company-header {
@@ -127,6 +125,7 @@
   padding: var(--spacing-lg);
   background-color: var(--neutral-light);
   border-bottom: 1px solid var(--border-color-light);
+  border-radius: 10px;
 }
 
 .people-page__company-info {

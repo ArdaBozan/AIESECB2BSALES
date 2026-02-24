@@ -1,11 +1,10 @@
 'use client';
 
-import React, { useState, useMemo, useEffect, useRef } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import { Building2, Filter, Plus, X, Save } from 'lucide-react';
+import { Building2, Filter, Plus, X, Save, RotateCcw } from 'lucide-react';
 import { mockCompanies, mockActivities } from '@/data/mockData';
 import { CompanyCard, CompanySidebar } from '@/components/companies';
-import FilterPanel from '@/components/common/FilterPanel';
 import Modal from '@/components/common/Modal';
 import { Company, CompanyFilter, CompanyStatus } from '@/types';
 import './page.css';
@@ -18,16 +17,33 @@ const statuses: { value: CompanyStatus; label: string }[] = [
   { value: 'negatif', label: 'Negatif' },
 ];
 
+const contactCounts = [
+  { value: '', label: 'Tümü' },
+  { value: 'none', label: 'Bağlantı Yok' },
+  { value: 'some', label: '1-5 Bağlantı' },
+  { value: 'many', label: '5+ Bağlantı' },
+];
+const proposalStatuses = [
+  { value: '', label: 'Tümü' },
+  { value: 'true', label: 'Teklif Var' },
+  { value: 'false', label: 'Teklif Yok' },
+];
+const companyStatuses = [
+  { value: '', label: 'Aktif & Pasif' },
+  { value: 'aktif', label: 'Sadece Aktif' },
+  { value: 'pasif', label: 'Sadece Pasif' },
+];
+
 export default function CompaniesPage() {
   const router = useRouter();
   const [selectedCompany, setSelectedCompany] = useState<Company | null>(null);
   const [showFilter, setShowFilter] = useState(false);
   const [filters, setFilters] = useState<CompanyFilter>({});
+  const [tempFilters, setTempFilters] = useState<CompanyFilter>({});
   const [visibleCount, setVisibleCount] = useState(12);
   const [isMobile, setIsMobile] = useState(false);
   const [showMobileModal, setShowMobileModal] = useState(false);
   const [showAddModal, setShowAddModal] = useState(false);
-  const filterWrapperRef = useRef<HTMLDivElement>(null);
 
   // Add company form state
   const [newCompany, setNewCompany] = useState({
@@ -41,22 +57,12 @@ export default function CompaniesPage() {
     notes: '',
   });
 
-  // Close filter dropdown when clicking outside
+  // Reset temp filters when modal opens
   useEffect(() => {
-    const handleClickOutside = (event: MouseEvent) => {
-      if (filterWrapperRef.current && !filterWrapperRef.current.contains(event.target as Node)) {
-        setShowFilter(false);
-      }
-    };
-
     if (showFilter) {
-      document.addEventListener('mousedown', handleClickOutside);
+      setTempFilters(filters);
     }
-
-    return () => {
-      document.removeEventListener('mousedown', handleClickOutside);
-    };
-  }, [showFilter]);
+  }, [showFilter, filters]);
 
   // Check if mobile
   useEffect(() => {
@@ -167,31 +173,13 @@ export default function CompaniesPage() {
             <h1 className="companies-page__title-text">Tüm Şirketler</h1>
           </div>
           <div className="companies-page__actions">
-            <div className={`companies-page__filter-wrapper ${showFilter ? 'companies-page__filter-wrapper--open' : ''}`} ref={filterWrapperRef}>
-              <button 
-                className="companies-page__filter-btn"
-                onClick={() => setShowFilter(!showFilter)}
-              >
-                <Filter className="companies-page__filter-btn-icon" />
-                Filtrele
-              </button>
-              {showFilter && (
-                <>
-                  <div 
-                    className="companies-page__filter-overlay"
-                    onClick={() => setShowFilter(false)}
-                  />
-                  <div className="companies-page__filter-dropdown">
-                    <FilterPanel
-                      onClose={() => setShowFilter(false)}
-                      onApply={handleApplyFilters}
-                      onReset={handleResetFilters}
-                      initialFilters={filters}
-                    />
-                  </div>
-                </>
-              )}
-            </div>
+            <button 
+              className="companies-page__filter-btn"
+              onClick={() => setShowFilter(!showFilter)}
+            >
+              <Filter className="companies-page__filter-btn-icon" />
+              Filtrele
+            </button>
             <button 
               className="companies-page__add-btn"
               onClick={() => setShowAddModal(true)}
@@ -391,6 +379,102 @@ export default function CompaniesPage() {
           </div>
         </form>
       </Modal>
+
+      {/* Filter Modal */}
+      {showFilter && (
+        <>
+          <div className="filter-modal__overlay" onClick={() => setShowFilter(false)} />
+          <div className="filter-modal">
+            <div className="filter-modal__header">
+              <div className="filter-modal__icon">
+                <Filter />
+              </div>
+              <button className="filter-modal__close" onClick={() => setShowFilter(false)}>
+                <X />
+              </button>
+            </div>
+            <div className="filter-modal__content">
+              <h2 className="filter-modal__title">Filtrele</h2>
+              <p className="filter-modal__message">Şirketleri filtrelemek için seçenekleri belirleyin</p>
+            </div>
+            <div className="filter-modal__form">
+              <div className="filter-modal__group">
+                <label className="filter-modal__label">Kategori</label>
+                <select 
+                  className="filter-modal__select"
+                  value={tempFilters.category || ''}
+                  onChange={(e) => setTempFilters(prev => ({ ...prev, category: e.target.value || undefined }))}
+                >
+                  <option value="">Tümü</option>
+                  {categories.map(cat => (
+                    <option key={cat} value={cat}>{cat}</option>
+                  ))}
+                </select>
+              </div>
+
+              <div className="filter-modal__group">
+                <label className="filter-modal__label">Bağlantı Sayısı</label>
+                <select 
+                  className="filter-modal__select"
+                  value={tempFilters.contactCount || ''}
+                  onChange={(e) => setTempFilters(prev => ({ ...prev, contactCount: (e.target.value || undefined) as 'none' | 'some' | 'many' | undefined }))}
+                >
+                  {contactCounts.map(opt => (
+                    <option key={opt.value} value={opt.value}>{opt.label}</option>
+                  ))}
+                </select>
+              </div>
+
+              <div className="filter-modal__group">
+                <label className="filter-modal__label">Teklif Durumu</label>
+                <select 
+                  className="filter-modal__select"
+                  value={tempFilters.hasProposal !== undefined ? String(tempFilters.hasProposal) : ''}
+                  onChange={(e) => setTempFilters(prev => ({ ...prev, hasProposal: e.target.value ? e.target.value === 'true' : undefined }))}
+                >
+                  {proposalStatuses.map(opt => (
+                    <option key={opt.value} value={opt.value}>{opt.label}</option>
+                  ))}
+                </select>
+              </div>
+
+              <div className="filter-modal__group">
+                <label className="filter-modal__label">Durum</label>
+                <select 
+                  className="filter-modal__select"
+                  value={tempFilters.status || ''}
+                  onChange={(e) => setTempFilters(prev => ({ ...prev, status: (e.target.value || undefined) as CompanyStatus | undefined }))}
+                >
+                  {companyStatuses.map(opt => (
+                    <option key={opt.value} value={opt.value}>{opt.label}</option>
+                  ))}
+                </select>
+              </div>
+            </div>
+            <div className="filter-modal__actions">
+              <button 
+                className="filter-modal__btn filter-modal__btn--cancel"
+                onClick={() => {
+                  setTempFilters({});
+                  setFilters({});
+                  setShowFilter(false);
+                }}
+              >
+                Sıfırla
+              </button>
+              <button 
+                className="filter-modal__btn filter-modal__btn--primary"
+                onClick={() => {
+                  setFilters(tempFilters);
+                  setShowFilter(false);
+                }}
+              >
+                Uygula
+              </button>
+            </div>
+          </div>
+        </>
+      )}
     </div>
   );
 }

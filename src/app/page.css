@@ -176,6 +176,7 @@
   padding: var(--spacing-md);
   border-radius: var(--border-radius-sm);
   background-color: var(--dashboard-bg);
+  background-color: hsl(0, 0%, 99%);
   gap: var(--spacing-md);
 }
 
