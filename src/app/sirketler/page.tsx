@@ -167,7 +167,7 @@ export default function CompaniesPage() {
             <h1 className="companies-page__title-text">Tüm Şirketler</h1>
           </div>
           <div className="companies-page__actions">
-            <div className="companies-page__filter-wrapper" ref={filterWrapperRef}>
+            <div className={`companies-page__filter-wrapper ${showFilter ? 'companies-page__filter-wrapper--open' : ''}`} ref={filterWrapperRef}>
               <button 
                 className="companies-page__filter-btn"
                 onClick={() => setShowFilter(!showFilter)}
@@ -176,14 +176,20 @@ export default function CompaniesPage() {
                 Filtrele
               </button>
               {showFilter && (
-                <div className="companies-page__filter-dropdown">
-                  <FilterPanel
-                    onClose={() => setShowFilter(false)}
-                    onApply={handleApplyFilters}
-                    onReset={handleResetFilters}
-                    initialFilters={filters}
+                <>
+                  <div 
+                    className="companies-page__filter-overlay"
+                    onClick={() => setShowFilter(false)}
                   />
-                </div>
+                  <div className="companies-page__filter-dropdown">
+                    <FilterPanel
+                      onClose={() => setShowFilter(false)}
+                      onApply={handleApplyFilters}
+                      onReset={handleResetFilters}
+                      initialFilters={filters}
+                    />
+                  </div>
+                </>
               )}
             </div>
             <button 

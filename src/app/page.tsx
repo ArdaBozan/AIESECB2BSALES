@@ -2,6 +2,7 @@
 
 import React from 'react';
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import { 
   Home, 
   Building2, 
@@ -19,6 +20,7 @@ import './page.css';
 
 export default function DashboardPage() {
   const { isAdmin } = useAuth();
+  const router = useRouter();
 
   const stats = [
     {
@@ -100,7 +102,11 @@ export default function DashboardPage() {
             </div>
             <div className="dashboard__recent-companies">
               {recentCompanies.map((company) => (
-                <CompanyCard key={company.id} company={company} />
+                <CompanyCard 
+                  key={company.id} 
+                  company={company} 
+                  onClick={() => router.push(`/sirketler/${company.id}`)}
+                />
               ))}
             </div>
           </div>
@@ -118,8 +124,10 @@ export default function DashboardPage() {
                 return (
                   <div key={activity.id} className="dashboard__activity-item">
                     <div className="dashboard__activity-left">
-                      <StatusBadge status={activity.type} showIcon />
-                      <div>
+                      <div className="dashboard__activity-status">
+                        <StatusBadge status={activity.type} showIcon />
+                      </div>
+                      <div className="dashboard__activity-info">
                         <div className="dashboard__activity-company">{company?.name}</div>
                         <div className="dashboard__activity-meta">{activity.userName}</div>
                       </div>

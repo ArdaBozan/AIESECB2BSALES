@@ -16,12 +16,18 @@ import {
   User,
   MoreVertical,
   X,
-  RotateCcw
+  RotateCcw,
+  Eye,
+  Edit3,
+  Trash2,
+  Copy,
+  Search
 } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
 import { mockCompanies, mockActivities } from '@/data/mockData';
 import { ActivityType, Company } from '@/types';
 import StatusBadge from '@/components/common/StatusBadge';
+import ConfirmModal from '@/components/common/ConfirmModal';
 import './page.css';
 
 const activityTypes: { type: ActivityType; label: string; icon: React.ReactNode }[] = [
@@ -48,24 +54,30 @@ export default function ActivitiesPage() {
   const [notes, setNotes] = useState('');
   const [showFilter, setShowFilter] = useState(false);
   const [filterType, setFilterType] = useState<ActivityType | ''>('');
-  const filterWrapperRef = useRef<HTMLDivElement>(null);
+  const [openMenuId, setOpenMenuId] = useState<string | null>(null);
+  const [detailModal, setDetailModal] = useState<{ isOpen: boolean; activity: typeof mockActivityLog[0] | null }>({ isOpen: false, activity: null });
+  const [editModal, setEditModal] = useState<{ isOpen: boolean; activity: typeof mockActivityLog[0] | null }>({ isOpen: false, activity: null });
+  const [deleteModal, setDeleteModal] = useState<{ isOpen: boolean; activity: typeof mockActivityLog[0] | null }>({ isOpen: false, activity: null });
+  const [editFormData, setEditFormData] = useState({ userName: '', status: '' as ActivityType, note: '' });
+  const [searchQuery, setSearchQuery] = useState('');
+  const menuRef = useRef<HTMLDivElement>(null);
 
-  // Close filter dropdown when clicking outside
+  // Close menu dropdown when clicking outside
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
-      if (filterWrapperRef.current && !filterWrapperRef.current.contains(event.target as Node)) {
-        setShowFilter(false);
+      if (menuRef.current && !menuRef.current.contains(event.target as Node)) {
+        setOpenMenuId(null);
       }
     };
 
-    if (showFilter) {
+    if (openMenuId) {
       document.addEventListener('mousedown', handleClickOutside);
     }
 
     return () => {
       document.removeEventListener('mousedown', handleClickOutside);
     };
-  }, [showFilter]);
+  }, [openMenuId]);
 
   // Filter activities based on user permissions
   const filteredActivities = mockActivities.filter(activity => {
@@ -86,10 +98,30 @@ export default function ActivitiesPage() {
     };
   }).filter(c => c.activityCount > 0);
 
-  // Filter activity log based on selected filter
-  const filteredActivityLog = filterType 
-    ? mockActivityLog.filter(a => a.status === filterType)
-    : mockActivityLog;
+  // Filter activity log based on selected filter and search
+  const filteredActivityLog = mockActivityLog.filter(a => {
+    // Apply type filter
+    if (filterType && a.status !== filterType) return false;
+    
+    // Apply search filter
+    if (searchQuery.trim()) {
+      const query = searchQuery.toLowerCase();
+      const typeLabels: Record<string, string> = {
+        'cold_call': 'cold call',
+        'postponed': 'ertelendi',
+        'meeting': 'görüşmede',
+        'proposal': 'teklif'
+      };
+      return (
+        a.userName.toLowerCase().includes(query) ||
+        a.note.toLowerCase().includes(query) ||
+        a.role.toLowerCase().includes(query) ||
+        a.status.toLowerCase().includes(query) ||
+        (typeLabels[a.status] && typeLabels[a.status].includes(query))
+      );
+    }
+    return true;
+  });
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -160,7 +192,17 @@ export default function ActivitiesPage() {
             <ListTodo className="activities-page__title-icon" />
             <h1 className="activities-page__title-text">Aktiviteler</h1>
           </div>
-          <div className="activities-page__filter-wrapper" ref={filterWrapperRef}>
+          <div className="activities-page__header-actions">
+            <div className="activities-page__search">
+              <Search className="activities-page__search-icon" />
+              <input 
+                type="text" 
+                className="activities-page__search-input"
+                placeholder="Ara"
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+              />
+            </div>
             <button 
               className="activities-page__filter-btn"
               onClick={() => setShowFilter(!showFilter)}
@@ -168,47 +210,6 @@ export default function ActivitiesPage() {
               <Filter className="activities-page__filter-btn-icon" />
               Filtrele
             </button>
-            {showFilter && (
-              <div className="activities-page__filter-dropdown">
-                <div className="activities-page__filter-header">
-                  <span>Aktivite Türü</span>
-                  <button 
-                    className="activities-page__filter-close"
-                    onClick={() => setShowFilter(false)}
-                  >
-                    <X />
-                  </button>
-                </div>
-                <div className="activities-page__filter-options">
-                  <label className="activities-page__filter-option">
-                    <input 
-                      type="radio" 
-                      name="filterType" 
-                      checked={filterType === ''} 
-                      onChange={() => setFilterType('')}
-                    />
-                    <span>Tümü</span>
-                  </label>
-                  {activityTypes.map(({ type, label }) => (
-                    <label key={type} className="activities-page__filter-option">
-                      <input 
-                        type="radio" 
-                        name="filterType" 
-                        checked={filterType === type} 
-                        onChange={() => setFilterType(type)}
-                      />
-                      <span>{label}</span>
-                    </label>
-                  ))}
-                </div>
-                <button 
-                  className="activities-page__filter-apply"
-                  onClick={() => setShowFilter(false)}
-                >
-                  Uygula
-                </button>
-              </div>
-            )}
           </div>
         </div>
 
@@ -267,7 +268,8 @@ export default function ActivitiesPage() {
               </tr>
             </thead>
             <tbody>
-              {filteredActivityLog.map((activity) => (
+              {filteredActivityLog.length > 0 ? (
+                filteredActivityLog.map((activity) => (
                 <tr key={activity.id}>
                   <td className="activity-log__user">
                     <div className="activity-log__user-avatar">
@@ -282,16 +284,227 @@ export default function ActivitiesPage() {
                   <td className="activity-log__role">{activity.role}</td>
                   <td className="activity-log__note">{activity.note}</td>
                   <td className="activity-log__actions">
-                    <button className="activity-log__action-btn">
-                      <MoreVertical />
-                    </button>
+                    <div className="activity-log__menu-wrapper" ref={openMenuId === activity.id ? menuRef : null}>
+                      <button 
+                        className="activity-log__action-btn"
+                        onClick={() => setOpenMenuId(openMenuId === activity.id ? null : activity.id)}
+                      >
+                        <MoreVertical />
+                      </button>
+                      {openMenuId === activity.id && (
+                        <div className="activity-log__dropdown">
+                          <button className="activity-log__dropdown-item" onClick={() => { setDetailModal({ isOpen: true, activity }); setOpenMenuId(null); }}>
+                            <Eye className="activity-log__dropdown-icon" />
+                            Detaylar
+                          </button>
+                          <button className="activity-log__dropdown-item" onClick={() => { setEditModal({ isOpen: true, activity }); setEditFormData({ userName: activity.userName, status: activity.status, note: activity.note }); setOpenMenuId(null); }}>
+                            <Edit3 className="activity-log__dropdown-icon" />
+                            Düzenle
+                          </button>
+                          <button className="activity-log__dropdown-item" onClick={() => { alert('Kopyalandı: ' + activity.userName); setOpenMenuId(null); }}>
+                            <Copy className="activity-log__dropdown-icon" />
+                            Kopyala
+                          </button>
+                          <button className="activity-log__dropdown-item activity-log__dropdown-item--danger" onClick={() => { setDeleteModal({ isOpen: true, activity }); setOpenMenuId(null); }}>
+                            <Trash2 className="activity-log__dropdown-icon" />
+                            Sil
+                          </button>
+                        </div>
+                      )}
+                    </div>
                   </td>
                 </tr>
-              ))}
+              ))
+              ) : (
+                <tr>
+                  <td colSpan={6} className="activity-log__empty">
+                    Sonuç bulunamadı
+                  </td>
+                </tr>
+              )}
             </tbody>
           </table>
         </div>
       </div>
+
+      {/* Detail Modal */}
+      {detailModal.isOpen && detailModal.activity && (
+        <>
+          <div className="activity-modal__overlay" onClick={() => setDetailModal({ isOpen: false, activity: null })} />
+          <div className="activity-modal">
+            <div className="activity-modal__header">
+              <h2 className="activity-modal__title">Aktivite Detayı</h2>
+              <button className="activity-modal__close" onClick={() => setDetailModal({ isOpen: false, activity: null })}>
+                <X />
+              </button>
+            </div>
+            <div className="activity-modal__content">
+              <div className="activity-modal__row">
+                <span className="activity-modal__label">Kullanıcı</span>
+                <div className="activity-modal__user">
+                  <div className="activity-modal__user-avatar">
+                    <User />
+                  </div>
+                  <span>{detailModal.activity.userName}</span>
+                </div>
+              </div>
+              <div className="activity-modal__row">
+                <span className="activity-modal__label">Durum</span>
+                <StatusBadge status={detailModal.activity.status} showIcon />
+              </div>
+              <div className="activity-modal__row">
+                <span className="activity-modal__label">Tarih</span>
+                <span className="activity-modal__value">{detailModal.activity.date}</span>
+              </div>
+              <div className="activity-modal__row">
+                <span className="activity-modal__label">Yetki</span>
+                <span className="activity-modal__value">{detailModal.activity.role}</span>
+              </div>
+              <div className="activity-modal__row">
+                <span className="activity-modal__label">Not</span>
+                <span className="activity-modal__value">{detailModal.activity.note}</span>
+              </div>
+            </div>
+            <div className="activity-modal__actions">
+              <button className="activity-modal__btn activity-modal__btn--secondary" onClick={() => setDetailModal({ isOpen: false, activity: null })}>
+                Kapat
+              </button>
+              <button className="activity-modal__btn activity-modal__btn--primary" onClick={() => { setEditModal({ isOpen: true, activity: detailModal.activity }); setEditFormData({ userName: detailModal.activity!.userName, status: detailModal.activity!.status, note: detailModal.activity!.note }); setDetailModal({ isOpen: false, activity: null }); }}>
+                Düzenle
+              </button>
+            </div>
+          </div>
+        </>
+      )}
+
+      {/* Edit Modal */}
+      {editModal.isOpen && editModal.activity && (
+        <>
+          <div className="activity-modal__overlay" onClick={() => setEditModal({ isOpen: false, activity: null })} />
+          <div className="activity-modal">
+            <div className="activity-modal__header">
+              <h2 className="activity-modal__title">Aktivite Düzenle</h2>
+              <button className="activity-modal__close" onClick={() => setEditModal({ isOpen: false, activity: null })}>
+                <X />
+              </button>
+            </div>
+            <div className="activity-modal__content">
+              <div className="activity-modal__form-group">
+                <label className="activity-modal__form-label">Kullanıcı Adı</label>
+                <input 
+                  type="text" 
+                  className="activity-modal__form-input" 
+                  value={editFormData.userName}
+                  onChange={(e) => setEditFormData({ ...editFormData, userName: e.target.value })}
+                />
+              </div>
+              <div className="activity-modal__form-group">
+                <label className="activity-modal__form-label">Durum</label>
+                <select 
+                  className="activity-modal__form-select"
+                  value={editFormData.status}
+                  onChange={(e) => setEditFormData({ ...editFormData, status: e.target.value as ActivityType })}
+                >
+                  <option value="cold_call">Cold Call</option>
+                  <option value="postponed">Ertelendi</option>
+                  <option value="meeting">Görüşmede</option>
+                  <option value="proposal">Teklif Verildi</option>
+                </select>
+              </div>
+              <div className="activity-modal__form-group">
+                <label className="activity-modal__form-label">Not</label>
+                <textarea 
+                  className="activity-modal__form-textarea"
+                  value={editFormData.note}
+                  onChange={(e) => setEditFormData({ ...editFormData, note: e.target.value })}
+                />
+              </div>
+            </div>
+            <div className="activity-modal__actions">
+              <button className="activity-modal__btn activity-modal__btn--secondary" onClick={() => setEditModal({ isOpen: false, activity: null })}>
+                İptal
+              </button>
+              <button className="activity-modal__btn activity-modal__btn--primary" onClick={() => { alert('Değişiklikler kaydedildi'); setEditModal({ isOpen: false, activity: null }); }}>
+                Kaydet
+              </button>
+            </div>
+          </div>
+        </>
+      )}
+
+      {/* Delete Confirmation Modal */}
+      <ConfirmModal
+        isOpen={deleteModal.isOpen}
+        onClose={() => setDeleteModal({ isOpen: false, activity: null })}
+        onConfirm={() => alert('Aktivite silindi: ' + deleteModal.activity?.userName)}
+        title="Aktiviteyi Sil"
+        message={`"${deleteModal.activity?.userName}" kullanıcısına ait bu aktiviteyi silmek istediğinizden emin misiniz? Bu işlem geri alınamaz.`}
+        confirmText="Sil"
+        cancelText="İptal"
+        type="danger"
+      />
+
+      {/* Filter Modal */}
+      {showFilter && (
+        <>
+          <div className="filter-modal__overlay" onClick={() => setShowFilter(false)} />
+          <div className="filter-modal">
+            <div className="filter-modal__header">
+              <div className="filter-modal__icon">
+                <Filter />
+              </div>
+              <button className="filter-modal__close" onClick={() => setShowFilter(false)}>
+                <X />
+              </button>
+            </div>
+            <div className="filter-modal__content">
+              <h2 className="filter-modal__title">Aktivite Türü</h2>
+              <p className="filter-modal__message">Görüntülemek istediğiniz aktivite türünü seçin</p>
+            </div>
+            <div className="filter-modal__options">
+              <label className="filter-modal__option">
+                <input 
+                  type="radio" 
+                  name="filterType" 
+                  checked={filterType === ''} 
+                  onChange={() => setFilterType('')}
+                />
+                <span className="filter-modal__radio"></span>
+                <span>Tümü</span>
+              </label>
+              {activityTypes.map(({ type, label }) => (
+                <label key={type} className="filter-modal__option">
+                  <input 
+                    type="radio" 
+                    name="filterType" 
+                    checked={filterType === type} 
+                    onChange={() => setFilterType(type)}
+                  />
+                  <span className="filter-modal__radio"></span>
+                  <span>{label}</span>
+                </label>
+              ))}
+            </div>
+            <div className="filter-modal__actions">
+              <button 
+                className="filter-modal__btn filter-modal__btn--cancel"
+                onClick={() => {
+                  setFilterType('');
+                  setShowFilter(false);
+                }}
+              >
+                Sıfırla
+              </button>
+              <button 
+                className="filter-modal__btn filter-modal__btn--primary"
+                onClick={() => setShowFilter(false)}
+              >
+                Uygula
+              </button>
+            </div>
+          </div>
+        </>
+      )}
     </div>
   );
 }

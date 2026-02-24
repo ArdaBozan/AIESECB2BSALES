@@ -188,6 +188,16 @@
   overflow: hidden;
 }
 
+.dashboard__activity-status {
+  flex-shrink: 0;
+  width: 110px;
+}
+
+.dashboard__activity-info {
+  min-width: 0;
+  flex: 1;
+}
+
 .dashboard__activity-company {
   font-size: 14px;
   font-weight: 500;

@@ -5,6 +5,7 @@ import { createPortal } from 'react-dom';
 import { X, User, Camera, Eye, EyeOff, Check, AlertCircle, LogOut } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
 import { UserRole } from '@/types';
+import ConfirmModal from '@/components/common/ConfirmModal';
 import './ProfileModal.css';
 
 interface ProfileModalProps {
@@ -65,6 +66,7 @@ export default function ProfileModal({ isOpen, onClose }: ProfileModalProps) {
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [isSaving, setIsSaving] = useState(false);
   const [saveSuccess, setSaveSuccess] = useState(false);
+  const [showLogoutConfirm, setShowLogoutConfirm] = useState(false);
 
   // Reset form when modal opens
   useEffect(() => {
@@ -442,10 +444,7 @@ export default function ProfileModal({ isOpen, onClose }: ProfileModalProps) {
             <button 
               type="button" 
               className="profile-modal__btn profile-modal__btn--logout"
-              onClick={() => {
-                logout();
-                onClose();
-              }}
+              onClick={() => setShowLogoutConfirm(true)}
             >
               <LogOut />
               Çıkış Yap
@@ -477,6 +476,21 @@ export default function ProfileModal({ isOpen, onClose }: ProfileModalProps) {
             </div>
           </div>
         </form>
+
+        {/* Logout Confirmation Modal */}
+        <ConfirmModal
+          isOpen={showLogoutConfirm}
+          onClose={() => setShowLogoutConfirm(false)}
+          onConfirm={() => {
+            logout();
+            onClose();
+          }}
+          title="Çıkış Yap"
+          message="Hesabınızdan çıkış yapmak istediğinizden emin misiniz?"
+          confirmText="Çıkış Yap"
+          cancelText="İptal"
+          type="danger"
+        />
       </div>
     </div>,
     document.body
