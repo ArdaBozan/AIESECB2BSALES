@@ -1,0 +1,268 @@
+.dashboard {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-xl);
+}
+
+.dashboard__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.dashboard__title {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-md);
+}
+
+.dashboard__title-icon {
+  width: 28px;
+  height: 28px;
+  color: var(--text-regular);
+}
+
+.dashboard__title-text {
+  font-size: 22px;
+  font-weight: 600;
+  color: var(--text-regular);
+}
+
+.dashboard__stats {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: var(--spacing-lg);
+}
+
+.stat-card {
+  background-color: var(--neutral-light);
+  border-radius: var(--border-radius);
+  padding: var(--spacing-lg);
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-sm);
+}
+
+.stat-card__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.stat-card__icon {
+  width: 40px;
+  height: 40px;
+  border-radius: var(--border-radius);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.stat-card__icon--blue {
+  background-color: var(--activity-main-bg);
+  color: var(--primary-400);
+}
+
+.stat-card__icon--green {
+  background-color: var(--status-active-bg);
+  color: var(--status-active);
+}
+
+.stat-card__icon--orange {
+  background-color: var(--status-pending-bg);
+  color: var(--status-pending);
+}
+
+.stat-card__icon--purple {
+  background-color: var(--activity-proposal-bg);
+  color: var(--activity-proposal);
+}
+
+.stat-card__icon svg {
+  width: 22px;
+  height: 22px;
+}
+
+.stat-card__trend {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 12px;
+  font-weight: 500;
+}
+
+.stat-card__trend--up {
+  color: var(--status-active);
+}
+
+.stat-card__trend--down {
+  color: var(--status-negative);
+}
+
+.stat-card__trend-icon {
+  width: 14px;
+  height: 14px;
+}
+
+.stat-card__value {
+  font-size: 28px;
+  font-weight: 700;
+  color: var(--text-regular);
+}
+
+.stat-card__label {
+  font-size: 13px;
+  color: var(--text-light);
+}
+
+.dashboard__content {
+  display: grid;
+  grid-template-columns: 1fr 340px;
+  gap: var(--spacing-xl);
+}
+
+.dashboard__main {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-xl);
+}
+
+.dashboard__section {
+  background-color: var(--neutral-light);
+  border-radius: var(--border-radius);
+  padding: var(--spacing-lg);
+}
+
+.dashboard__section-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: var(--spacing-lg);
+}
+
+.dashboard__section-title {
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--text-regular);
+}
+
+.dashboard__section-action {
+  font-size: 13px;
+  color: var(--primary-400);
+  cursor: pointer;
+  transition: color var(--transition-fast);
+}
+
+.dashboard__section-action:hover {
+  color: var(--primary-hover-dark);
+}
+
+.dashboard__recent-companies {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: var(--spacing-md);
+}
+
+.dashboard__activity-list {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-sm);
+}
+
+.dashboard__activity-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: var(--spacing-md);
+  border-radius: var(--border-radius-sm);
+  background-color: var(--dashboard-bg);
+  gap: var(--spacing-md);
+}
+
+.dashboard__activity-left {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-md);
+  min-width: 0;
+  flex: 1;
+  overflow: hidden;
+}
+
+.dashboard__activity-company {
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--text-regular);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.dashboard__activity-meta {
+  font-size: 12px;
+  color: var(--text-light);
+  white-space: nowrap;
+}
+
+.dashboard__activity-right {
+  display: flex;
+  align-items: center;
+  flex-shrink: 0;
+  gap: var(--spacing-md);
+}
+
+.dashboard__activity-date {
+  font-size: 12px;
+  color: var(--text-light);
+}
+
+@media (max-width: 1200px) {
+  .dashboard__stats {
+    grid-template-columns: repeat(2, 1fr);
+  }
+  
+  .dashboard__content {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 768px) {
+  .dashboard__stats {
+    grid-template-columns: 1fr;
+  }
+  
+  .dashboard__recent-companies {
+    grid-template-columns: 1fr;
+  }
+
+  .dashboard__title-text {
+    font-size: 18px;
+  }
+
+  .stat-card__value {
+    font-size: 24px;
+  }
+
+  .dashboard__section {
+    padding: var(--spacing-md);
+  }
+}
+
+@media (max-width: 480px) {
+  .dashboard {
+    gap: var(--spacing-md);
+  }
+
+  .stat-card {
+    padding: var(--spacing-md);
+  }
+
+  .stat-card__icon {
+    width: 36px;
+    height: 36px;
+  }
+
+  .stat-card__icon svg {
+    width: 18px;
+    height: 18px;
+  }
+}

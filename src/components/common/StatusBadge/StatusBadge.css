@@ -1,0 +1,130 @@
+.status-badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 4px 10px;
+  border-radius: var(--border-radius-sm);
+  font-size: 11px;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+/* Company Status */
+.status-badge--aktif {
+  background-color: var(--status-active-bg);
+  color: var(--status-active);
+}
+
+.status-badge--pasif {
+  background-color: var(--status-passive-bg);
+  color: var(--status-passive);
+}
+
+.status-badge--negatif {
+  background-color: var(--status-negative-bg);
+  color: var(--status-negative);
+}
+
+.status-badge--pozitif {
+  background-color: var(--status-active-bg);
+  color: var(--status-active);
+}
+
+.status-badge--cevap_yok {
+  background-color: var(--status-pending-bg);
+  color: var(--status-pending);
+}
+
+.status-badge--tekrar_ara {
+  background-color: var(--activity-cold-call-bg);
+  color: var(--activity-cold-call);
+}
+
+.status-badge--toplanti_planlandi {
+  background-color: var(--activity-meeting-bg);
+  color: var(--activity-meeting);
+}
+
+/* Activity Status */
+.status-badge--cold_call {
+  background-color: var(--activity-cold-call-bg);
+  color: var(--activity-cold-call);
+}
+
+.status-badge--meeting {
+  background-color: var(--activity-meeting-bg);
+  color: var(--activity-meeting);
+}
+
+.status-badge--postponed {
+  background-color: var(--activity-postponed-bg);
+  color: var(--activity-postponed);
+}
+
+.status-badge--proposal {
+  background-color: var(--activity-proposal-bg);
+  color: var(--activity-proposal);
+}
+
+.status-badge--email {
+  background-color: var(--activity-main-bg);
+  color: var(--activity-text-primary);
+}
+
+.status-badge--task {
+  background-color: var(--status-passive-bg);
+  color: var(--status-passive);
+}
+
+/* Deal Stage */
+.status-badge--new_lead {
+  background-color: var(--activity-main-bg);
+  color: var(--activity-text-primary);
+}
+
+.status-badge--qualified {
+  background-color: var(--status-passive-bg);
+  color: var(--status-passive);
+}
+
+.status-badge--negotiation {
+  background-color: var(--activity-postponed-bg);
+  color: var(--activity-postponed);
+}
+
+.status-badge--closed_won {
+  background-color: var(--status-active-bg);
+  color: var(--status-active);
+}
+
+.status-badge--closed_lost {
+  background-color: var(--status-negative-bg);
+  color: var(--status-negative);
+}
+
+/* Activity completion status */
+.status-badge--completed {
+  background-color: var(--status-active-bg);
+  color: var(--status-active);
+}
+
+.status-badge--pending {
+  background-color: var(--status-passive-bg);
+  color: var(--status-passive);
+}
+
+.status-badge--overdue {
+  background-color: var(--status-negative-bg);
+  color: var(--status-negative);
+}
+
+.status-badge--cancelled {
+  background-color: var(--sidenav-bg);
+  color: var(--text-light);
+}
+
+/* With Icon */
+.status-badge__icon {
+  width: 12px;
+  height: 12px;
+  margin-right: 4px;
+}
